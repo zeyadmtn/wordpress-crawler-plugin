@@ -127,7 +127,7 @@ function createSitemap()
     $sitemap .= '<meta charset="UTF-8">';
     $sitemap .= '<title>Sitemap</title>';
     $sitemap .= '<style>';
-    $sitemap .= 'body { font-family: Arial, sans-serif; margin: 20px; }';
+    $sitemap .= 'body { font-family: Arial, sans-serif; margin: 20px 40px; }';
     $sitemap .= 'h1 { text-align: center; }';
     $sitemap .= 'ul { list-style-type: none; padding: 0; }';
     $sitemap .= 'li { margin-bottom: 5px; }';
@@ -136,26 +136,28 @@ function createSitemap()
     $sitemap .= '</style>';
     $sitemap .= '</head>';
     $sitemap .= '<body>';
-    $sitemap .= '<h1>Sitemap - Zeyad\'s WP Media Dev Test</h1>';
+    $sitemap .= '<h1>Sitemap - <a href="' . home_url() . '">WP Media Dev Test - Zeyad</a></h1>';
     $sitemap .= '<ul>';
+    $sitemap .= '<h3>WPMedia DevTest - Zeyad</h3>';
+    $sitemap .= '<hr>';
     foreach ($results as $result) {
         $url = $result->url;
         $name = $result->name;
         $name = html_entity_decode($name, ENT_QUOTES, 'UTF-8');
         $name = htmlspecialchars($name, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $sitemap .= '<li><a href="' . $url . '">' . $name . '</a></li>';
+        $sitemap .= '<li><a href="' . $url . '">' . ' - ' . $name . '</a></li>';
     }
     $sitemap .= '</ul>';
     $sitemap .= '</body>';
     $sitemap .= '</html>';
+
 
     $file_path = WP_CONTENT_DIR . '/sitemap.html';
     file_put_contents($file_path, $sitemap);
 }
 
 // Trigger the crawl when the admin initiates it
-function triggerCrawl()
-{
+function runCrawl() {
     // Delete previous results and sitemap file
     deletePreviousResults();
     deleteSitemapFile();
@@ -169,6 +171,26 @@ function triggerCrawl()
     // Create the sitemap.html file
     createSitemap();
 }
+
+function triggerCrawl()
+{
+    runCrawl();
+    // Schedule the crawl to run every hour
+    if (!wp_next_scheduled('crawl_plugin_hourly_event')) {
+        wp_schedule_event(time(), 'hourly', 'crawl_plugin_hourly_event');
+    }
+}
+
+
+// Function to be executed on the hourly event
+function crawl_plugin_hourly_event()
+{
+    runCrawl();
+}
+
+// Register the hourly event
+add_action('crawl_plugin_hourly_event', 'crawl_plugin_hourly_event');
+
 
 // Register the menu page for the plugin under Settings
 function crawl_plugin_menu()
