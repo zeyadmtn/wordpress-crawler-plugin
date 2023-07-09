@@ -59,18 +59,24 @@ function crawlWebsite($url)
             continue;
         }
 
+        // Get the name from the text content of the anchor
+        $name = $anchor->textContent;
+
         // Remove any query parameters or fragments from the URL
         $parsedUrl = parse_url($href);
         $cleanUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $parsedUrl['path'];
 
-        // Add the cleaned URL to the array
-        $urls[] = $cleanUrl;
+        // Add the name and URL to the array
+        $urls[] = array(
+            'name' => $name,
+            'url' => $cleanUrl
+        );
     }
 
     // Insert the extracted URLs into the database
     $table_name = $wpdb->prefix . 'crawl_results';
     foreach ($urls as $url) {
-        $wpdb->insert($table_name, array('url' => $url));
+        $wpdb->insert($table_name, $url);
     }
 }
 
@@ -86,7 +92,7 @@ function displayResults()
     global $wpdb;
 
     $table_name = $wpdb->prefix . 'crawl_results';
-    $results = $wpdb->get_results("SELECT * FROM $table_name");
+    $results = $wpdb->get_results("SELECT name, url FROM $table_name");
 
     // Display the results on the admin page
     echo '<h2>Crawl Results:</h2>';
@@ -106,6 +112,7 @@ function saveHomePage()
 }
 
 // Function to create the sitemap.html file
+// Function to create the sitemap.html file
 function createSitemap()
 {
     global $wpdb;
@@ -114,11 +121,33 @@ function createSitemap()
     $results = $wpdb->get_results("SELECT * FROM $table_name");
 
     // Create the sitemap.html file with the results as a sitemap list structure
-    $sitemap = '<ul>';
+    $sitemap = '<!DOCTYPE html>';
+    $sitemap .= '<html>';
+    $sitemap .= '<head>';
+    $sitemap .= '<meta charset="UTF-8">';
+    $sitemap .= '<title>Sitemap</title>';
+    $sitemap .= '<style>';
+    $sitemap .= 'body { font-family: Arial, sans-serif; margin: 20px; }';
+    $sitemap .= 'h1 { text-align: center; }';
+    $sitemap .= 'ul { list-style-type: none; padding: 0; }';
+    $sitemap .= 'li { margin-bottom: 5px; }';
+    $sitemap .= 'a { color: #007bff; text-decoration: none; }';
+    $sitemap .= 'a:hover { text-decoration: underline; }';
+    $sitemap .= '</style>';
+    $sitemap .= '</head>';
+    $sitemap .= '<body>';
+    $sitemap .= '<h1>Sitemap - Zeyad\'s WP Media Dev Test</h1>';
+    $sitemap .= '<ul>';
     foreach ($results as $result) {
-        $sitemap .= '<li>' . $result->url . '</li>';
+        $url = $result->url;
+        $name = $result->name;
+        $name = html_entity_decode($name, ENT_QUOTES, 'UTF-8');
+        $name = htmlspecialchars($name, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $sitemap .= '<li><a href="' . $url . '">' . $name . '</a></li>';
     }
     $sitemap .= '</ul>';
+    $sitemap .= '</body>';
+    $sitemap .= '</html>';
 
     $file_path = WP_CONTENT_DIR . '/sitemap.html';
     file_put_contents($file_path, $sitemap);
