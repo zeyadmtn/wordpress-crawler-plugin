@@ -96,9 +96,10 @@ function displayResults()
 
     // Display the results on the admin page
     echo '<h2>Crawl Results:</h2>';
+    echo '<strong>WPMedia Dev Test - Zeyad</strong>';
     echo '<ul>';
     foreach ($results as $result) {
-        echo '<li>' . $result->url . '</li>';
+        echo '<li>' . $result->name . ' - <a href="' . $result->url . '">' . $result->url . '</a></li>';
     }
     echo '</ul>';
 }
