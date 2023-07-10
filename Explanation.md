@@ -2,7 +2,9 @@
 According to the user story, the admin would like to see how their website links are linked together in their homepage to find ways to optimize their SEO.
 
 # Solution
-According to the user story, the admin would like to see how their website links are linked together in their homepage to find ways to optimize their SEO.
+To build a web crawler plugin, which allows the admin to press a trigger button, which triggers a web crawler than crawls all the links that are linked in the homepage, display these results to the admin in the plugin page, and create a sitemap page to show how the website is connected. The sitemap is available for all users to access.
+
+
 
 
 # Usage
