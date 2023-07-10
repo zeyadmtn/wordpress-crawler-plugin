@@ -44,7 +44,6 @@ function crawlWebsite($url)
         }
 
         libxml_clear_errors();
-
         $anchors = $dom->getElementsByTagName('a');
 
         $urls = [];
