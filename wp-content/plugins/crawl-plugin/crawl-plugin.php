@@ -32,52 +32,75 @@ function crawlWebsite($url)
 {
     global $wpdb;
 
-    // Create a new DOMDocument instance
-    $dom = new DOMDocument();
+    try {
 
-    // Suppress warnings and errors caused by malformed HTML
-    libxml_use_internal_errors(true);
-
-    // Load the HTML content from the specified URL
-    $dom->loadHTMLFile($url);
-
-    // Reset errors
-    libxml_clear_errors();
-
-    // Extract all anchor tags
-    $anchors = $dom->getElementsByTagName('a');
-
-    // Array to store the extracted URLs
-    $urls = [];
-
-    // Iterate over the anchor tags and extract the URLs
-    foreach ($anchors as $anchor) {
-        $href = $anchor->getAttribute('href');
-
-        // Skip empty or non-internal URLs
-        if (empty($href) || !startsWith($href, $url)) {
-            continue;
+        // Create a new DOMDocument instance
+        $dom = new DOMDocument();
+    
+        // Suppress warnings and errors caused by malformed HTML
+        libxml_use_internal_errors(true);
+    
+        // Load the HTML content from the specified URL
+        $success = $dom->loadHTMLFile($url);
+    
+        // Check if the HTML load was successful
+        if (!$success) {
+            $error_message = "Error loading HTML from URL: " . $url;
+            displayErrorMessage($error_message);
+            return;
         }
-
-        // Get the name from the text content of the anchor
-        $name = $anchor->textContent;
-
-        // Remove any query parameters or fragments from the URL
-        $parsedUrl = parse_url($href);
-        $cleanUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $parsedUrl['path'];
-
-        // Add the name and URL to the array
-        $urls[] = array(
-            'name' => $name,
-            'url' => $cleanUrl
-        );
+    
+        // Reset errors
+        libxml_clear_errors();
+    
+        // Extract all anchor tags
+        $anchors = $dom->getElementsByTagName('a');
+    
+        // Array to store the extracted URLs
+        $urls = [];
+    
+        // Iterate over the anchor tags and extract the URLs
+        foreach ($anchors as $anchor) {
+            $href = $anchor->getAttribute('href');
+    
+            // Skip empty or non-internal URLs
+            if (empty($href) || !startsWith($href, $url)) {
+                continue;
+            }
+    
+            // Get the name from the text content of the anchor
+            $name = $anchor->textContent;
+    
+            // Remove any query parameters or fragments from the URL
+            $parsedUrl = parse_url($href);
+            $cleanUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $parsedUrl['path'];
+    
+            // Add the name and URL to the array
+            $urls[] = array(
+                'name' => $name,
+                'url' => $cleanUrl
+            );
+        }
+    
+        // Insert the extracted URLs into the database
+        $table_name = $wpdb->prefix . 'crawl_results';
+        foreach ($urls as $url) {
+            $wpdb->insert($table_name, $url);
+        }
+    } catch (Exception $e) {
+        $error_message = "An Unexpected Error has Occured Crawling the Links in this link: " . $url . " Please try again later or contact the plugin adminisrator.";
+        displayErrorMessage($error_message);
+        return;
     }
 
-    // Insert the extracted URLs into the database
-    $table_name = $wpdb->prefix . 'crawl_results';
-    foreach ($urls as $url) {
-        $wpdb->insert($table_name, $url);
-    }
+}
+
+// Function to display an error message to the admin
+function displayErrorMessage($message)
+{
+    echo '<div class="error notice">';
+    echo '<p>' . $message . '</p>';
+    echo '</div>';
 }
 
 // Helper function to check if a string starts with a specific prefix
