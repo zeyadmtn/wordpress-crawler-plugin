@@ -1,3 +1,10 @@
+# How to Run Project
+- Run the project on a web server (apache/nginx)
+- Run a MySQL server.
+- Import the DB found in root folder "DATABASE.sql" in your local workbench
+- Run 'composer install'
+- Done - Plugin is found in wp-content/plugins/crawl-plugin
+
 # Problem
 According to the user story, the admin would like to see how their website links are linked together in their homepage to find ways to optimize their SEO.
 
